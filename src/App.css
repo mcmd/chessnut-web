@@ -1,0 +1,180 @@
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.4;
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  min-height: 44px;
+}
+
+button {
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.connection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status.connected {
+  color: #2e8b57;
+}
+
+.info {
+  font-size: 0.9em;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #8884;
+}
+
+.tabs button {
+  flex: 1;
+  border: none;
+  background: none;
+  border-bottom: 3px solid transparent;
+}
+
+.tabs button.active {
+  border-bottom-color: currentColor;
+  font-weight: 600;
+}
+
+section:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+section > * {
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.1em;
+}
+
+.board {
+  width: min(92vw, 480px);
+  align-self: center;
+}
+
+.fen {
+  word-break: break-all;
+  font-size: 0.85em;
+}
+
+.muted {
+  opacity: 0.7;
+}
+
+.error {
+  color: #d22;
+}
+
+.notice {
+  padding: 8px 10px;
+  border-left: 4px solid #e0a000;
+  background: #e0a00018;
+}
+
+.moves {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+
+.san {
+  min-height: 32px;
+  padding: 0 6px;
+  border: none;
+  background: none;
+  text-decoration: underline dotted;
+}
+
+.san.current {
+  background: #ffd20066;
+}
+
+.toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggles input {
+  min-height: auto;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.library {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.library li {
+  padding: 10px 0;
+  border-bottom: 1px solid #8884;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.badge {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  background: #e0a00040;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.fields label {
+  display: flex;
+  flex-direction: column;
+}
+
+.log pre {
+  max-height: 300px;
+  overflow: auto;
+  font-size: 0.8em;
+}
