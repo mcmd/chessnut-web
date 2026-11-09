@@ -24,8 +24,8 @@ export default function ConnectionBar() {
   }
 
   const battery = info?.battery ? `${info.battery.level}%${info.battery.charging ? ' ⚡' : ''}` : '—'
-  const firmware =
-    info && (info.bleVersion || info.mcuVersion) ? `BLE ${info.bleVersion ?? '?'} / MCU ${info.mcuVersion ?? '?'}` : '—'
+  const versions = [info?.bleVersion && `BLE ${info.bleVersion}`, info?.mcuVersion && `MCU ${info.mcuVersion}`]
+  const firmware = versions.filter(Boolean).join(' / ') || '—'
 
   return (
     <header className="connection">

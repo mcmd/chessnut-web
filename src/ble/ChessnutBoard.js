@@ -12,6 +12,10 @@ import {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// A command written too soon after a mode switch (21 01 xx) leaves the board's MCU ignoring LED and
+// MCU-version commands until it is power-cycled; 500 ms is the gap verified to be safe.
+const MODE_SETTLE_MS = 500
+
 /** Resolves true when `promise` settles first, false after `ms`. */
 const within = (promise, ms) => Promise.race([promise.then(() => true), sleep(ms).then(() => false)])
 
@@ -159,7 +163,7 @@ export class ChessnutBoard extends EventTarget {
       this.#log('out', bytes)
       await this.#cmdChar.writeValueWithoutResponse(bytes)
     })
-    this.#writeQueue = run.catch(() => {})
+    this.#writeQueue = run.catch(() => {}).then(() => (bytes[0] === 0x21 ? sleep(MODE_SETTLE_MS) : undefined))
     return run
   }
 
@@ -209,8 +213,12 @@ export class ChessnutBoard extends EventTarget {
     return this.#request(CMD.fileCount, parseCount, 3000)
   }
 
-  /** Placements of the newest stored game; the game stays on the board. */
-  async readNewestGame() {
+  /**
+   * Placements of the newest stored game. Without `saveThenDelete` the game stays on the board.
+   * With it, that async callback receives the placements and the game is deleted from the board only after
+   * the callback resolves. The board accepts the delete only in upload mode, i.e. before switching back to realtime.
+   */
+  async readNewestGame(saveThenDelete) {
     let gotHeader, gotEnd
     const headerArrived = new Promise((r) => (gotHeader = r))
     const endArrived = new Promise((r) => (gotEnd = r))
@@ -231,25 +239,24 @@ export class ChessnutBoard extends EventTarget {
     this.#collector = c
     try {
       await this.send(CMD.uploadMode)
-      await sleep(500)
       await this.send(CMD.startFileRead)
       await this.send(CMD.readNextChunk)
       // The board sometimes stalls before the header; switching to realtime releases the transfer.
-      if (!(await within(headerArrived, 3000))) await this.send(CMD.realtime)
+      const kicked = !(await within(headerArrived, 3000))
+      if (kicked) await this.send(CMD.realtime)
       if (!(await within(endArrived, 15000))) throw new Error('Transfer incomplete')
       if (c.header && c.placements.length !== c.header.expectedPositions) throw new Error('Transfer incomplete')
+      if (saveThenDelete) {
+        await saveThenDelete(c.placements)
+        if (kicked) throw new Error('The board was busy, so this game was saved but not deleted. Run Import all again.')
+        await this.send(CMD.deleteNewest)
+        await sleep(1000)
+      }
       return c.placements
     } finally {
       this.#collector = null
       await this.send(CMD.realtime).catch(() => {})
     }
-  }
-
-  async deleteNewestGame() {
-    await this.send(CMD.deleteNewest)
-    await sleep(1000)
-    await this.send(CMD.realtime)
-    await sleep(500)
   }
 
   async getInfo() {

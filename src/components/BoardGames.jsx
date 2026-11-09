@@ -47,10 +47,10 @@ export default function BoardGames() {
       let remaining = total
       for (let k = 1; remaining > 0; k++) {
         setMessage(`Importing game ${k} of ${total}`)
-        const placements = await board.readNewestGame()
-        // Saved or already stored: either way the game is safe in the library before it is deleted.
-        await saveGame(await boardRecord(placements, batchStart - (k - 1)))
-        await board.deleteNewestGame()
+        // Saved or already stored: either way the game is safe in the library before the board deletes it.
+        await board.readNewestGame(async (placements) => {
+          await saveGame(await boardRecord(placements, batchStart - (k - 1)))
+        })
         const next = await board.getGameCount()
         setCount(next)
         if (next !== remaining - 1) {

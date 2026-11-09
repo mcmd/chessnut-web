@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { decodePlacement, ledFrame, parseCount, parseTransferHeader, toHex } from './protocol.js'
+import {
+  decodePlacement,
+  ledFrame,
+  parseBattery,
+  parseCount,
+  parseTransferHeader,
+  parseVersion,
+  toHex,
+} from './protocol.js'
 
 const hex = (s) => Uint8Array.from(s.split(' ').map((x) => parseInt(x, 16)))
 
@@ -46,5 +54,14 @@ describe('reply parsers', () => {
 
   it('derives the position count from the transfer header', () => {
     expect(parseTransferHeader(hex('36 08 a2 01 00 00 c0 04 00 00'))).toEqual({ expectedPositions: 11 })
+  })
+
+  it('parses battery replies captured from a Chessnut Air', () => {
+    expect(parseBattery(hex('2a 02 32 01'))).toEqual({ level: 50, charging: true })
+  })
+
+  it('parses firmware version replies captured from a Chessnut Air', () => {
+    expect(parseVersion(hex('28 0d 00 43 4e 43 41 31 30 30 5f 56 32 30 31'))).toBe('CNCA100_V201')
+    expect(parseVersion(hex('28 0f 01 43 4e 5f 44 56 54 39 5f 32 32 30 36 32 37'))).toBe('CN_DVT9_220627')
   })
 })
